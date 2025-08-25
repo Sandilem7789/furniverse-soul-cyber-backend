@@ -1,0 +1,7 @@
+name,description,price,sale_price,category,image_url,is_featured
+Elegant Dining Chairs Set,"Set of 4 cushioned dining chairs with curved backrests and oak legs",3499,2999,Dining Room,https://example.com/images/dining-chairs.jpg,True
+Modern Storage Cabinet,"Matte black cabinet with soft-close drawers and modular compartments",4999,,Storage,https://example.com/images/storage-cabinet.jpg,False
+Luxury Living Room Set,"Complete living room set with velvet sofa, coffee table, and accent rug",18999,15999,Living Room,https://example.com/images/living-room-set.jpg,True
+Executive Office Desk,"Spacious oak desk with cable management and built-in drawers",7999,,Office,https://example.com/images/office-desk.jpg,True
+Rustic Wooden Bookshelf,"Handcrafted bookshelf made from reclaimed wood with open shelving",3499,,Storage,https://example.com/images/bookshelf.jpg,False
+Contemporary Bed Frame,"Minimalist bed frame with under-bed storage and LED headboard",9999,8999,Bedroom,https://example.com/images/bed-frame.jpg,True

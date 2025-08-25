@@ -1,12 +1,10 @@
-from django.shortcuts import render
 from django.http import JsonResponse
-
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework import viewsets
 from .models import Product, Category
 from .serializers import ProductSerializer, CategorySerializer
 
-# Create your views here.
 def hello_world(request):
     return JsonResponse({"message": "Hello, from furniverse backend!"})
 
@@ -19,14 +17,10 @@ def featured_products(request):
     serializer = ProductSerializer(products, many=True)
     return Response(serializer.data)
 
-@api_view(['GET'])
-def product_list(request):
-    products = Product.objects.all()
-    serializer = ProductSerializer(products, many=True)
-    return Response(serializer.data)
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
 
-@api_view(['GET'])
-def categories(request):
-    categories = Category.objects.all()
-    serializer = CategorySerializer(categories, many=True)
-    return Response(serializer.data)
+class CategoryViewSet(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
