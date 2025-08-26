@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-2cu4iz0l5tqvb1m9krmxf&9)!ywir5@vvflg#u!r4mgjx81@c4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*", "192.168.227.95"]
 
 
 # Application definition
@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'api', 'rest_framework',
+    'api', 'rest_framework', 'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -48,7 +48,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
+
+ALLOWED_ORIGINS = ['http://192.168.227.216:8080']    #frontend address
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 ROOT_URLCONF = 'furniverse_backend.urls'
 
