@@ -74,6 +74,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'furniverse_backend.wsgi.application'
 
+#Images Serving
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

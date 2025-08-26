@@ -10,6 +10,6 @@ class Product(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
     sale_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    image_url = models.URLField(max_length=200)
+    image = models.ImageField(upload_to='products/')
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     is_featured = models.BooleanField(default=False)

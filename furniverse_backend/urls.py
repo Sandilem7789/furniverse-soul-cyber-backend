@@ -20,6 +20,10 @@ from api.views import home
 from rest_framework.routers import DefaultRouter
 from api.views import ProductViewSet, CategoryViewSet
 
+#IMAGE SERVING
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 router = DefaultRouter()
 router.register(r'products', ProductViewSet)
@@ -30,3 +34,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
 ]
+
+#Appending media-serving routes provided by Django during development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
