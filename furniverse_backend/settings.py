@@ -51,7 +51,10 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 
-ALLOWED_ORIGINS = ['http://192.168.227.216:8080']    #frontend address
+ALLOWED_ORIGINS = [
+    "http://192.168.27.129:8080",
+    "http://localhost:8080",
+    ]    #frontend address
 
 CORS_ALLOW_ALL_ORIGINS = True
 

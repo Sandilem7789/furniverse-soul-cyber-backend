@@ -16,7 +16,7 @@ class Command(BaseCommand):
                     description=row['description'],
                     price=row['price'],
                     sale_price=row['sale_price'] if row['sale_price'] else None,
-                    image_url=row['image_url'],
+                    image=row['image_url'],
                     category=category_instance,
                     is_featured=row['is_featured'].lower() in ('true', '1', 'yes')
                 )
