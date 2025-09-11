@@ -1,10 +1,13 @@
 from django.db import models
 
-# Create your models here.
-#Category Model
+from django.contrib.auth.models import User         # For user authentication
+
+
+# Category Model
 class Category(models.Model):
     name = models.CharField(max_length=100)
 
+# Product Model
 class Product(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
@@ -13,3 +16,12 @@ class Product(models.Model):
     image = models.ImageField(upload_to='products/', default='products/default.jpg')
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     is_featured = models.BooleanField(default=False)
+
+# Cart Model
+class CartItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    
+    class Meta:
+        unique_together = ('user', 'product')                                       # Ensure one cart item per user-product pair

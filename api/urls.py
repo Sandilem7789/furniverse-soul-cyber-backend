@@ -7,5 +7,6 @@ urlpatterns = [
     path('products/featured/', featured_products, name='featured_products'),
     path('products/', product_list, name='product_list'),
     path('categories/', categories, name='categories'),
-    path('api/', include('router.urls')),   
+    path('api/', include('router.urls')),
+    path('api/login/', CustomAuthToken.as_view(), name='login'),  
 ]
