@@ -16,6 +16,9 @@ class Product(models.Model):
     image = models.ImageField(upload_to='products/', default='products/default.jpg')
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     is_featured = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"{self.name} – R{self.price}"
 
 # Cart Model
 class CartItem(models.Model):

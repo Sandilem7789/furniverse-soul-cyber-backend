@@ -8,5 +8,6 @@ urlpatterns = [
     path('products/featured/', featured_products, name='featured_products'),
     path('products/', product_list, name='product_list'),
     path('categories/', categories, name='categories'),
-    path('login/', CustomAuthToken.as_view(), name='login'),  
+    path('login/', CustomAuthToken.as_view(), name='login'),
+    path('register/', views.register_user, name='register'),  # New registration endpoint
 ]
