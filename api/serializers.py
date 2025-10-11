@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Category
+from .models import Product, Category, CartItem
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,3 +19,10 @@ class ProductSerializer(serializers.ModelSerializer):
         if obj.image:
             return request.build_absolute_uri(obj.image.url)
         return None
+
+class CartItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+    
+    class Meta:
+        model = CartItem
+        fields = '__all__'

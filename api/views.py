@@ -4,16 +4,18 @@ from django.contrib.auth.models import User         # For user authentication
 from django.shortcuts import redirect
 
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 from rest_framework import status
 
-from .models import Product, Category
-from .serializers import ProductSerializer, CategorySerializer
+from .models import Product, Category, CartItem
+from .serializers import ProductSerializer, CategorySerializer, CartItemSerializer
+
 
 
 
@@ -46,6 +48,7 @@ def featured_products(request):
 class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
+    permission_classes = [AllowAny]  # Add appropriate permissions
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
@@ -53,6 +56,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 # Product List
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def product_list(request):
     products = Product.objects.all()
     serializer = ProductSerializer(products, many=True)
@@ -82,3 +86,14 @@ def register_user(request):
     user.save()
 
     return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
+
+# Cart Views
+class CartItemViewSet(viewsets.ModelViewSet):
+    serializer_class = CartItemSerializer
+    permission_classes = [IsAuthenticated]  # Add appropriate permissions
+    
+    def get_queryset(self):
+        return CartItem.objects.filter(user=self.request.user)
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
