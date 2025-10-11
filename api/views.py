@@ -14,7 +14,7 @@ from rest_framework.decorators import api_view
 from rest_framework import status
 
 from .models import Product, Category, CartItem
-from .serializers import ProductSerializer, CategorySerializer, CartItemSerializer
+from .serializers import ProductSerializer, CategorySerializer, CartItemSerializer, CartItemWriteSerializer
 
 
 
@@ -89,7 +89,6 @@ def register_user(request):
 
 # Cart Views
 class CartItemViewSet(viewsets.ModelViewSet):
-    serializer_class = CartItemSerializer
     permission_classes = [IsAuthenticated]  # Add appropriate permissions
     
     def get_queryset(self):
@@ -97,3 +96,8 @@ class CartItemViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+    
+    def get_serializer_class(self):
+        if self.action in ['create', 'update']:
+            return CartItemWriteSerializer  # handles incoming product ID
+        return CartItemSerializer   # returns nested product info
