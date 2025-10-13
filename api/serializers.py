@@ -21,7 +21,7 @@ class ProductSerializer(serializers.ModelSerializer):
         return None
 
 class CartItemSerializer(serializers.ModelSerializer):
-    product = ProductSerializer(read_only=True)
+    product = ProductSerializer()
     
     class Meta:
         model = CartItem
