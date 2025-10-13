@@ -101,3 +101,7 @@ class CartItemViewSet(viewsets.ModelViewSet):
         if self.action in ['create', 'update']:
             return CartItemWriteSerializer  # handles incoming product ID
         return CartItemSerializer   # returns nested product info
+    
+    def destroy(self, request, *args, **kwargs):
+        print("Deleting cart item:", kwargs.get("pk"))
+        return super().destroy(request, *args, **kwargs)
