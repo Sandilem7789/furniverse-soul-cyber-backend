@@ -95,22 +95,20 @@ class CartItemViewSet(viewsets.ModelViewSet):
         return CartItem.objects.filter(user=self.request.user)
     
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
         product = serializer.validated_data['product']
-        print(f"Added to cart: {product.name} for user {self.request.user.username}")
         quantity = serializer.validated_data['quantity']
-        print(f"Quantity: {quantity}")
-        
-        existing_item = CartItem.objects.filter(user=self.request.user, product=product).first()
-        if existing_item and existing_item != serializer.instance:
+        user = self.request.user
+
+        existing_item = CartItem.objects.filter(user=user, product=product).first()
+
+        if existing_item:
             existing_item.quantity += quantity
             existing_item.save()
-            serializer.instance.delete()  # Remove the newly created duplicate
             print(f"Updated quantity for {product.name} to {existing_item.quantity}")
-        else:
-            print(f"New cart item created for {product.name} with quantity {quantity}")
-            serializer.save(user=self.request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            serializer.save(user=user)
+            print(f"New cart item created for {product.name} with quantity {quantity}")
     
     def get_serializer_class(self):
         if self.action in ['create', 'update']:
