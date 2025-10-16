@@ -3,21 +3,24 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User         # For user authentication
 from django.shortcuts import redirect
 
-
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework import viewsets
+from rest_framework import viewsets, status, permissions
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
-from rest_framework import status
 
-from .models import Product, Category, CartItem
-from .serializers import ProductSerializer, CategorySerializer, CartItemSerializer, CartItemWriteSerializer
+from .models import (
+    Product, Category, CartItem, 
+    Order, OrderItem
+    )
 
-
-
+from .serializers import (
+    ProductSerializer, CategorySerializer,
+    CartItemSerializer, CartItemWriteSerializer,
+    OrderSerializer, OrderItemSerializer,
+)
 
 # Auth View
 class CustomAuthToken(ObtainAuthToken):
@@ -118,3 +121,21 @@ class CartItemViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         print("Deleting cart item:", kwargs.get("pk"))
         return super().destroy(request, *args, **kwargs)
+
+# Order Views
+class OrderViewSet(viewsets.ModelViewSet):
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Order.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class OrderItemViewSet(viewsets.ModelViewSet):
+    serializer_class = OrderItemSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return OrderItem.objects.filter(order__user=self.request.user)
