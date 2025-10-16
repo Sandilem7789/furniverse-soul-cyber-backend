@@ -4,21 +4,25 @@ from .views import (
     featured_products, 
     product_list, 
     categories, 
-    CartItemViewSet
+    CartItemViewSet,
+    OrderViewSet,
+    OrderItemViewSet
 )
 
 from .views import CustomAuthToken
 from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
-router.register(r'cart', CartItemViewSet, basename='cart')  # New cart endpoint
+router.register(r'cart', CartItemViewSet, basename='cart')                                  # cart endpoint
+router.register(r'orders', OrderViewSet, basename='orders')                                 # orders endpoint
+router.register(r'order-items', OrderItemViewSet, basename='order-items')                   # order items endpoint
 
 urlpatterns = [
     path('products/featured/', featured_products, name='featured_products'),
     path('products/', product_list, name='product_list'),
     path('categories/', categories, name='categories'),
     path('login/', CustomAuthToken.as_view(), name='login'),
-    path('register/', views.register_user, name='register'),  # New registration endpoint
+    path('register/', views.register_user, name='register'),                                # registration endpoint
 ]
 
 urlpatterns += router.urls
