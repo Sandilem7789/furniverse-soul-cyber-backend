@@ -11,6 +11,11 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 
+import hashlib
+from urllib.parse import urlencode
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+
 from .models import (
     Product, Category, CartItem, 
     Order, OrderItem
@@ -139,3 +144,78 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return OrderItem.objects.filter(order__user=self.request.user)
+
+
+# PayFast Integration
+def generate_payfast_url(order):
+    from urllib.parse import urlencode
+    import hashlib
+
+    # Full data payload (merchant_key included)
+    data = {
+        "merchant_id": "10042860",
+        "merchant_key": "bixilvur2t4k3",  # ✅ Include in final URL
+        "return_url": f"http://192.168.200.119:5173/order-confirmation/{order.id}",
+        "cancel_url": "http://192.168.200.119:5173/checkout",
+        "notify_url": "https://shelton-eupneic-generously.ngrok-free.dev/api/payfast/notify",
+        "amount": "%.2f" % order.total,
+        "item_name": f"Order #{order.id}",
+        "m_payment_id": str(order.id),
+    }
+
+    # Signature string (exclude merchant_key)
+    signature_fields = {k: v for k, v in data.items() if k != "merchant_key" and v}
+    signature_str = "&".join([f"{k}={signature_fields[k]}" for k in signature_fields])
+    signature_str += "&passphrase=octobermesh2025"
+    
+    print("Signature string:", signature_str)
+
+
+    # Generate signature
+    data["signature"] = hashlib.md5(signature_str.encode()).hexdigest()
+
+    # Build redirect URL
+    return "https://sandbox.payfast.co.za/eng/process?" + urlencode(data)
+
+
+
+
+# PayFast Notify View
+@csrf_exempt
+def payfast_notify(request):
+    if request.method == "POST":
+        # Step 1: Extract POST data
+        data = request.POST.dict()
+
+        # Step 2: Verify signature (optional but recommended)
+        signature_str = "&".join([f"{k}={v}" for k, v in data.items() if k != "signature"])
+        signature_str += "&passphrase=your_sandbox_passphrase"
+        expected_signature = hashlib.md5(signature_str.encode()).hexdigest()
+
+        if data.get("signature") != expected_signature:
+            return HttpResponse("Invalid signature", status=400)
+
+        # Step 3: Update order status
+        order_id = data.get("m_payment_id")
+        payment_status = data.get("payment_status")
+
+        # You can now mark the order as paid, failed, etc.
+        # Example:
+        # order = Order.objects.get(id=order_id)
+        # order.status = "paid" if payment_status == "COMPLETE" else "failed"
+        # order.save()
+
+        return HttpResponse("ITN received", status=200)
+
+    return HttpResponse("Invalid method", status=405)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_payfast_url(request, order_id):
+    try:
+        order = Order.objects.get(id=order_id, user=request.user)
+    except Order.DoesNotExist:
+        return Response({"error": "Order not found"}, status=404)
+
+    url = generate_payfast_url(order)
+    return Response({"url": url})

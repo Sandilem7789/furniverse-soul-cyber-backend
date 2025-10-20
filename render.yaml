@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: furniverse-backend
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      python manage.py migrate
+      python manage.py collectstatic --noinput
+    startCommand: gunicorn furniverse_backend.wsgi:application
+    envVars:
+      - key: SECRET_KEY
+        value: 'django-insecure-2cu4iz0l5tqvb1m9krmxf&9)!ywir5@vvflg#u!r4mgjx81@c4'
+      - key: DEBUG
+        value: false

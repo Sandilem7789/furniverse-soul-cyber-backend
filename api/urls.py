@@ -6,8 +6,10 @@ from .views import (
     categories, 
     CartItemViewSet,
     OrderViewSet,
-    OrderItemViewSet
+    OrderItemViewSet,
+    payfast_notify,
 )
+from .views import get_payfast_url
 
 from .views import CustomAuthToken
 from rest_framework.routers import DefaultRouter
@@ -23,6 +25,10 @@ urlpatterns = [
     path('categories/', categories, name='categories'),
     path('login/', CustomAuthToken.as_view(), name='login'),
     path('register/', views.register_user, name='register'),                                # registration endpoint
+    path("payfast/notify", payfast_notify, name="payfast-notify"),                          # PayFast notify endpoint
 ]
 
 urlpatterns += router.urls
+urlpatterns += [
+    path("payfast-url/<int:order_id>/", get_payfast_url, name="payfast-url"),
+]
