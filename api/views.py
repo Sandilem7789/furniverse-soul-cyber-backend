@@ -27,6 +27,8 @@ from .serializers import (
     OrderSerializer, OrderItemSerializer,
 )
 
+from decouple import config
+
 # Auth View
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -151,17 +153,21 @@ def generate_payfast_url(order):
     from urllib.parse import urlencode
     import hashlib
 
+    
     # Full data payload (merchant_key included)
+    FRONTEND_URL = config("FRONTEND_URL")
+    
     data = {
         "merchant_id": "10042860",
-        "merchant_key": "bixilvur2t4k3",  # ✅ Include in final URL
-        "return_url": f"http://192.168.200.119:5173/order-confirmation/{order.id}",
-        "cancel_url": "http://192.168.200.119:5173/checkout",
-        "notify_url": "https://shelton-eupneic-generously.ngrok-free.dev/api/payfast/notify",
+        "merchant_key": "bixilvur2t4k3",
+        "return_url": f"http://localhost:5173/order-confirmation/{order.id}",
+        "cancel_url": "http://localhost:5173/checkout",
+        "notify_url": "https://furniverse-soul-cyber-backend.onrender.com/api/payfast/notify",
         "amount": "%.2f" % order.total,
         "item_name": f"Order #{order.id}",
         "m_payment_id": str(order.id),
     }
+
 
     # Signature string (exclude merchant_key)
     signature_fields = {k: v for k, v in data.items() if k != "merchant_key" and v}
