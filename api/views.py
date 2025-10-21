@@ -224,4 +224,6 @@ def get_payfast_url(request, order_id):
         return Response({"error": "Order not found"}, status=404)
 
     url = generate_payfast_url(order)
+    print("Generated PayFast URL:", url)
+
     return Response({"url": url})
