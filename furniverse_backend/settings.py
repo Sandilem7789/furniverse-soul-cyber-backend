@@ -58,7 +58,10 @@ MIDDLEWARE = [
 #    "http://localhost:8080",
 #    ]    #frontend address
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://furniverse-soul-cyber.onrender.com",
+]
+
 
 ROOT_URLCONF = 'furniverse_backend.urls'
 
@@ -144,4 +147,18 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+}
+
+# Logging Configuration
+LOGGING = {
+    "version": 1,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
 }

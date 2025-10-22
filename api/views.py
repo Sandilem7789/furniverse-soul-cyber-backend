@@ -152,36 +152,52 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 def generate_payfast_url(order):
     from urllib.parse import urlencode
     import hashlib
+    from decouple import config
+    import logging
 
-    
-    # Full data payload (merchant_key included)
-    FRONTEND_URL = config("FRONTEND_URL")
-    
+    logger = logging.getLogger(__name__)
+
+    # Load secrets from env/config
+    merchant_id = config("PAYFAST_MERCHANT_ID", default="10042860")
+    merchant_key = config("PAYFAST_MERCHANT_KEY", default="bixilvur2t4k3")
+    passphrase = config("PAYFAST_PASSPHRASE", default="")  # keep empty if none
+
     data = {
-        "merchant_id": "10042860",
-        "merchant_key": "bixilvur2t4k3",
-        "return_url": f"http://localhost:5173/order-confirmation/{order.id}",
-        "cancel_url": "http://localhost:5173/checkout",
-        "notify_url": "https://furniverse-soul-cyber-backend.onrender.com/api/payfast/notify",
+        "merchant_id": merchant_id,
+        "merchant_key": merchant_key,
+        "return_url": f"{config('FRONTEND_URL')}/order-confirmation/{order.id}",
+        "cancel_url": f"{config('FRONTEND_URL')}/checkout",
+        "notify_url": f"{config('BACKEND_URL')}/api/payfast/notify",
         "amount": "%.2f" % order.total,
         "item_name": f"Order #{order.id}",
         "m_payment_id": str(order.id),
     }
 
-
     # Signature string (exclude merchant_key)
-    signature_fields = {k: v for k, v in data.items() if k != "merchant_key" and v}
-    signature_str = "&".join([f"{k}={signature_fields[k]}" for k in signature_fields])
-    signature_str += "&passphrase=octobermesh2025"
-    
-    print("Signature string:", signature_str)
+    signature_keys = [
+        "merchant_id",
+        "return_url",
+        "cancel_url",
+        "notify_url",
+        "amount",
+        "item_name",
+        "m_payment_id",
+    ]
 
+    signature_str = "&".join([f"{k}={data[k]}" for k in signature_keys if data.get(k)])
+    if passphrase:
+        signature_str += f"&passphrase={passphrase}"
 
-    # Generate signature
     data["signature"] = hashlib.md5(signature_str.encode()).hexdigest()
 
-    # Build redirect URL
-    return "https://sandbox.payfast.co.za/eng/process?" + urlencode(data)
+    logger.debug("PayFast signature string: %s", signature_str)
+    logger.debug("Generated signature: %s", data["signature"])
+
+    base = "https://sandbox.payfast.co.za/eng/process?"
+    redirect_url = base + urlencode(data)
+
+    logger.debug("Final redirect URL: %s", redirect_url)
+    return redirect_url
 
 
 
