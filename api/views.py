@@ -45,7 +45,7 @@ def hello_world(request):
     return JsonResponse({"message": "Hello, from furniverse backend!"})
 
 def home(request):
-    return redirect("http://localhost:5173")        # Redirect to frontend
+    return redirect(config("FRONTEND_URL", default="http://localhost:5173"))       # Redirect to frontend
 
 # Featured Products
 @api_view(['GET'])
