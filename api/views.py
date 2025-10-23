@@ -174,10 +174,13 @@ def generate_payfast_url(order):
     logger = logging.getLogger(__name__)
 
     merchant_id = config("PAYFAST_MERCHANT_ID")
+    merchant_key = config("PAYFAST_MERCHANT_KEY")
     passphrase = config("PAYFAST_PASSPHRASE", default="")
 
+    # Include merchant_key in redirect URL
     data = {
         "merchant_id": merchant_id,
+        "merchant_key": merchant_key,  # ✅ include here
         "return_url": f"{config('FRONTEND_URL')}/order-confirmation/{order.id}",
         "cancel_url": f"{config('FRONTEND_URL')}/checkout",
         "notify_url": f"{config('BACKEND_URL')}/api/payfast/notify",
@@ -186,12 +189,15 @@ def generate_payfast_url(order):
         "m_payment_id": str(order.id),
     }
 
-    data["signature"] = generate_signature(data, passphrase)
+    # Signature excludes merchant_key
+    signature_data = {k: v for k, v in data.items() if k != "merchant_key"}
+    data["signature"] = generate_signature(signature_data, passphrase)
 
     redirect_url = "https://sandbox.payfast.co.za/eng/process?" + urlencode(data)
     logger.debug("Redirecting to PayFast:", redirect_url)
 
     return redirect_url
+
 
 
 # PayFast Notify View
