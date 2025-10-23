@@ -28,6 +28,9 @@ from .serializers import (
 )
 
 from decouple import config
+from urllib.parse import urlencode
+import hashlib
+import logging
 
 # Auth View
 class CustomAuthToken(ObtainAuthToken):
@@ -105,7 +108,6 @@ class CartItemViewSet(viewsets.ModelViewSet):
         print("Cart request from:", self.request.user)
         return CartItem.objects.filter(user=self.request.user)
 
-    
     def perform_create(self, serializer):
         product = serializer.validated_data['product']
         quantity = serializer.validated_data['quantity']
@@ -148,25 +150,34 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return OrderItem.objects.filter(order__user=self.request.user)
+# Generate PayFast Signature
+def generate_signature(data, passphrase=None):
+    # Only include non-empty values
+    filtered = {k: v for k, v in data.items() if v != ""}
+
+    # Use PayFast's required order
+    ordered_keys = [
+        "merchant_id", "return_url", "cancel_url", "notify_url",
+        "amount", "item_name", "m_payment_id"
+    ]
+
+    signature_str = "&".join([f"{k}={filtered[k]}" for k in ordered_keys if k in filtered])
+
+    if passphrase:
+        signature_str += f"&passphrase={passphrase}"
+
+    return hashlib.md5(signature_str.encode()).hexdigest()
 
 
 # PayFast Integration
 def generate_payfast_url(order):
-    from urllib.parse import urlencode
-    import hashlib
-    from decouple import config
-    import logging
-
     logger = logging.getLogger(__name__)
 
-    # Load secrets from env/config
-    merchant_id = config("PAYFAST_MERCHANT_ID", default="10042860")
-    merchant_key = config("PAYFAST_MERCHANT_KEY", default="bixilvur2t4k3")
-    passphrase = config("PAYFAST_PASSPHRASE", default="")  # keep empty if none
+    merchant_id = config("PAYFAST_MERCHANT_ID")
+    passphrase = config("PAYFAST_PASSPHRASE", default="")
 
     data = {
         "merchant_id": merchant_id,
-        "merchant_key": merchant_key,
         "return_url": f"{config('FRONTEND_URL')}/order-confirmation/{order.id}",
         "cancel_url": f"{config('FRONTEND_URL')}/checkout",
         "notify_url": f"{config('BACKEND_URL')}/api/payfast/notify",
@@ -175,34 +186,12 @@ def generate_payfast_url(order):
         "m_payment_id": str(order.id),
     }
 
-    # Signature string (exclude merchant_key)
-    signature_keys = [
-        "merchant_id",
-        "return_url",
-        "cancel_url",
-        "notify_url",
-        "amount",
-        "item_name",
-        "m_payment_id",
-    ]
+    data["signature"] = generate_signature(data, passphrase)
 
-    signature_str = "&".join([f"{k}={data[k]}" for k in signature_keys if data.get(k)])
-    if passphrase:
-        signature_str += f"&passphrase={passphrase}"
+    redirect_url = "https://sandbox.payfast.co.za/eng/process?" + urlencode(data)
+    logger.debug("Redirecting to PayFast:", redirect_url)
 
-    data["signature"] = hashlib.md5(signature_str.encode()).hexdigest()
-
-
-    logger.debug("PayFast signature string: %s", signature_str)
-    logger.debug("Generated signature: %s", data["signature"])
-
-    base = "https://sandbox.payfast.co.za/eng/process?"
-    redirect_url = base + urlencode(data)
-
-    logger.debug("Final redirect URL: %s", redirect_url)
     return redirect_url
-
-
 
 
 # PayFast Notify View
