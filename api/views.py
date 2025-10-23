@@ -192,6 +192,7 @@ def generate_payfast_url(order):
 
     data["signature"] = hashlib.md5(signature_str.encode()).hexdigest()
 
+
     logger.debug("PayFast signature string: %s", signature_str)
     logger.debug("Generated signature: %s", data["signature"])
 
@@ -213,7 +214,7 @@ def payfast_notify(request):
 
         # Step 2: Verify signature (optional but recommended)
         signature_str = "&".join([f"{k}={v}" for k, v in data.items() if k != "signature"])
-        signature_str += "&passphrase=your_sandbox_passphrase"
+        signature_str += "&passphrase={passphrase}"
         expected_signature = hashlib.md5(signature_str.encode()).hexdigest()
 
         if data.get("signature") != expected_signature:
