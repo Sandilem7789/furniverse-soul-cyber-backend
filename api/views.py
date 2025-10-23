@@ -102,7 +102,9 @@ class CartItemViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]  # Add appropriate permissions
     
     def get_queryset(self):
+        print("Cart request from:", self.request.user)
         return CartItem.objects.filter(user=self.request.user)
+
     
     def perform_create(self, serializer):
         product = serializer.validated_data['product']
