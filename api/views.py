@@ -31,6 +31,7 @@ from decouple import config
 from urllib.parse import urlencode
 import hashlib
 import logging
+import urllib.parse
 
 # Auth View
 class CustomAuthToken(ObtainAuthToken):
@@ -150,17 +151,25 @@ class OrderItemViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return OrderItem.objects.filter(order__user=self.request.user)
+    
 # Generate PayFast Signature
-def generate_signature(data, passphrase=None):
-    filtered = {k: v for k, v in data.items() if v != ""}
-    ordered_keys = [
-        "merchant_id", "return_url", "cancel_url", "notify_url",
-        "amount", "item_name", "m_payment_id"
-    ]
-    signature_str = "&".join([f"{k}={filtered[k]}" for k in ordered_keys if k in filtered])
+def generate_signature(data, passphrase=""):
+    # Include passphrase in data if present
     if passphrase:
-        signature_str += f"&passphrase={passphrase}"
-    return hashlib.md5(signature_str.encode()).hexdigest()
+        data["passphrase"] = passphrase
+
+    # Filter out empty values and sort keys alphabetically
+    filtered = {k: v for k, v in data.items() if v}
+    sorted_keys = sorted(filtered.keys())
+
+    # Build payload string with URL-encoded values
+    payload = "&".join([
+        f"{k}={urllib.parse.quote_plus(str(filtered[k]).replace('+', ' '))}"
+        for k in sorted_keys
+    ])
+    print("Signature string:", payload)
+    # Hash with MD5
+    return hashlib.md5(payload.encode()).hexdigest()
 
 
 
