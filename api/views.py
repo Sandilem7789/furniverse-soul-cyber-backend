@@ -152,21 +152,16 @@ class OrderItemViewSet(viewsets.ModelViewSet):
         return OrderItem.objects.filter(order__user=self.request.user)
 # Generate PayFast Signature
 def generate_signature(data, passphrase=None):
-    # Only include non-empty values
     filtered = {k: v for k, v in data.items() if v != ""}
-
-    # Use PayFast's required order
     ordered_keys = [
         "merchant_id", "return_url", "cancel_url", "notify_url",
         "amount", "item_name", "m_payment_id"
     ]
-
     signature_str = "&".join([f"{k}={filtered[k]}" for k in ordered_keys if k in filtered])
-
     if passphrase:
         signature_str += f"&passphrase={passphrase}"
-
     return hashlib.md5(signature_str.encode()).hexdigest()
+
 
 
 # PayFast Integration
